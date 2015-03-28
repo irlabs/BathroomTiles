@@ -83,29 +83,21 @@ walls = [
 	},
 ]
 
-colors = [
-	{'name': "vert fonce", 'r': 92, 'g': 122, 'b': 112},
-	{'name': "vert uni", 'r': 101, 'g': 129, 'b': 119},
-	{'name': "vert pale", 'r': 128, 'g': 152, 'b': 137},
-	{'name': "vert uni", 'r': 101, 'g': 129, 'b': 119},
-	{'name': "vert pale", 'r': 128, 'g': 152, 'b': 137},
-	{'name': "vert uni", 'r': 101, 'g': 129, 'b': 119},
-	{'name': "vert pale", 'r': 128, 'g': 152, 'b': 137},
+allColors = [
+	{'code': "G1", 'name': "vert fonce", 'r': 92, 'g': 122, 'b': 112},
+	{'code': "G2", 'name': "vert uni", 'r': 101, 'g': 129, 'b': 119},
+	{'code': "G3", 'name': "vert pale", 'r': 128, 'g': 152, 'b': 137},
+	{'code': "G4", 'name': "pistache", 'r': 211, 'g': 230, 'b': 235},
+	{'code': "B1", 'name': "blue nuit", 'r': 48, 'g': 72, 'b': 159},
+	{'code': "B2", 'name': "blue fonce", 'r': 77, 'g': 101, 'b': 189},
+	{'code': "B3", 'name': "blue uni", 'r': 137, 'g': 166, 'b': 233},
+	{'code': "Z1", 'name': "noir", 'r': 50, 'g': 50, 'b': 50},
+	{'code': "Z2", 'name': "anthracite", 'r': 75, 'g': 75, 'b': 75},
+	{'code': "Z3", 'name': "gris perle", 'r': 240, 'g': 240, 'b': 240},
+	{'code': "Z4", 'name': "gris pale", 'r': 210, 'g': 210, 'b': 210},
 ]
 
-unusedColors = [
-	{'name': "vert fonce", 'r': 92, 'g': 122, 'b': 112},
-	{'name': "vert uni", 'r': 101, 'g': 129, 'b': 119},
-	{'name': "vert pale", 'r': 128, 'g': 152, 'b': 137},
-	{'name': "pistache", 'r': 211, 'g': 230, 'b': 235},
-	{'name': "blue nuit", 'r': 48, 'g': 72, 'b': 159},
-	{'name': "blue fonce", 'r': 77, 'g': 101, 'b': 189},
-	{'name': "blue uni", 'r': 137, 'g': 166, 'b': 233},
-	{'name': "noir", 'r': 50, 'g': 50, 'b': 50},
-	{'name': "gris perle", 'r': 240, 'g': 240, 'b': 240},
-	{'name': "gris pale", 'r': 210, 'g': 210, 'b': 210},
-	{'name': "anthracite", 'r': 75, 'g': 75, 'b': 75},
-]
+colors = ["G1", "G2", "G3", "G2", "G3", "G2", "G3"]
 
 voeg = {'name': "voeg donker", 'r': 100, 'g': 100, 'b': 100}
 
@@ -113,6 +105,9 @@ global_scale = 0.3333334
 voegMargin = 0.2
 
 firstRun = True
+storeAsArray = True
+
+allTiles = []
 
 class Rect(object):
 	def __init__(self, x, y, w, h):
@@ -169,9 +164,9 @@ def saveDataAsJson(data, filename):
 	
 def save():
 	# Saving the .json
-	timeName = "tegel_ontwerp_%s" % datetime.strftime(datetime.now(), "%d%b%y_%H:%M:%S")
+	timeName = "tegel_ontwerp_%s" % datetime.strftime(datetime.now(), "%d%b%y_%H.%M.%S")
 	jsonFile = "%s.json" % (timeName)
-	data = {'colors': colors}
+	data = {'colors': allColors, 'walls': walls, 'allTiles': allTiles}
 	saveDataAsJson(data, jsonFile)
 
 def keyPressed(event):
@@ -187,7 +182,7 @@ def keyPressed(event):
 	if (keyCode == 83) and (event.isMetaDown()): # 83 = s, meta = cmd
 		print "Saving ..."
 		save()
-	if True:
+	if False:
 		print "keyCode: %d -  modifiers: %d" % (keyCode, event.getModifiers())
 	
 def colorSamples():
@@ -196,14 +191,14 @@ def colorSamples():
 	s = 20
 	m = 2
 	x = bx
-	for color in colors:
-		stroke (voeg['r'], voeg['g'], voeg['b'])
-		fill(color['r'], color['g'], color['b'])
-		rect (x, y, s, s)
-		x += s + m
+	# for color in colors:
+	# 	stroke (voeg['r'], voeg['g'], voeg['b'])
+	# 	fill(color['r'], color['g'], color['b'])
+	# 	rect (x, y, s, s)
+	# 	x += s + m
 	y += s + m
 	x = bx
-	for color in unusedColors:
+	for color in allColors:
 		stroke (voeg['r'], voeg['g'], voeg['b'])
 		fill(color['r'], color['g'], color['b'])
 		rect (x, y, s, s)
@@ -224,10 +219,15 @@ def drawOutlines(scale):
 				rect((exclude['x'] + wall['x']) * scale, (exclude['y'] + wall['y']) * scale, exclude['w'] * scale, exclude['h'] * scale)
 
 def drawTiles(scale):
+	global allTiles
+	allTiles = []
 	tileSize = floor(30 * scale)
 	count = 0
 	for wall in walls[:]:
 		# Per wall draw tiles
+		tilesOnWall = {}
+		tilesOnWall['wall_name'] = wall['name']
+		# 
 		w = wall['w'] * scale
 		h = wall['h'] * scale
 		# Calculate the offset
@@ -248,10 +248,12 @@ def drawTiles(scale):
 		stroke (voeg['r'], voeg['g'], voeg['b'])
 		# stroke (200, 100, 100) # red voeg for testing
 		noFill()
+		tilesArray = []
 		# 
 		y = offsety
 		while y < (h + wally):
 			x = offsetx
+			tilesRow = []
 			while x < (w + wallx):
 				# check if not inside an exclude
 				shouldInclude = False
@@ -270,11 +272,32 @@ def drawTiles(scale):
 				# Only draw the tiles if not inside an exclude
 				if shouldInclude:
 					# pick random tile
-					color = colors[int(random(len(colors)))]
+					colorCode = colors[int(random(len(colors)))]
+					color = next((c for c in allColors if c['code'] == colorCode), None)
 					fill(color['r'], color['g'], color['b'])
 					
+					# Store in tilesArray
+					if storeAsArray:
+						tilesRow.append(colorCode)
+					else:
+						tileDict = {}
+						tileDict['c'] = colorCode
+						tileDict['x'] = round((x - wallx) / scale)
+						tileDict['y'] = round((y - wally) / scale)
+						tilesArray.append(tileDict)
+					
+					# Draw on the screen
 					rect(x, y, tileSize, tileSize)
 					count += 1
+				else:
+					# Store in tilesArray
+					if storeAsArray:
+						tilesRow.append(None)
 				x += tileSize
+			# Store in tilesArray
+			if storeAsArray:
+				tilesArray.append(tilesRow)
 			y += tileSize
+		tilesOnWall['tiles'] = tilesArray
+		allTiles.append(tilesOnWall)
 	# print "total tiles: %d" % count		
