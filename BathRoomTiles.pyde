@@ -3,7 +3,8 @@
 import json
 from datetime import datetime
 
-# Wanden
+# Walls
+tileScale = 30 # 30 pixels per 10 cm. / 10 cm tiles
 
 walls = [
 	{
@@ -101,8 +102,9 @@ colors = ["G1", "G2", "G3", "G2", "G3", "G2", "G3"]
 
 voeg = {'name': "voeg donker", 'r': 100, 'g': 100, 'b': 100}
 
-global_scale = 0.3333334
-voegMargin = 0.2
+overview_scale = 0.3
+pageMargin_x = 25
+pageMargin_y = 25
 
 firstRun = True
 storeAsArray = True
@@ -139,23 +141,40 @@ class Rect(object):
 		return "Rect(%f, %f, %f, %f)" % (self.x, self.y, self.w, self.h)
 
 def setup():
+	
 	# size(872, 445)
-	size(900, 600)
+	# size(900, 600)
 	# noLoop()
+
+	A4Landscape_w = 29.7
+	A4Landscape_h = 21.0
+	cmInch = 2.54
+	dpi = 72
+
+	docW = (A4Landscape_w / cmInch) * dpi 
+	docH = (A4Landscape_h / cmInch) * dpi
+	size(floor(round(docW)), floor(round(docH)));
 		
 def draw():
 	global firstRun
 	if (firstRun):
-		drawOutlines(global_scale)
-		drawTiles(global_scale)
+		drawBackground(True)
+		drawOutlines(overview_scale)
+		drawTiles(overview_scale)
 		colorSamples()
 		firstRun = False
 
 def drawGrid():
-	drawOutlines(global_scale)
+	drawOutlines(overview_scale)
+
+def drawBackground(onOverviewPage):
+	if onOverviewPage:
+		background(200, 200, 200)
+	else:
+		background(255, 255, 255)
 
 def drawRandom():
-	drawTiles(global_scale)
+	drawTiles(overview_scale)
 
 def saveDataAsJson(data, filename):
 	jsonData = json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '))
@@ -210,18 +229,26 @@ def drawOutlines(scale):
 		# Draw the wall
 		stroke(100)
 		fill(150)
-		rect(wall['x'] * scale, wall['y'] * scale, wall['w'] * scale, wall['h'] * scale)
+		x = (wall['x'] * scale) + pageMargin_x
+		y = (wall['y'] * scale) + pageMargin_y
+		w = wall['w'] * scale
+		h = wall['h'] * scale
+		rect(x, y, w, h)
 		# Draw the excludes
 		if wall.has_key('excludes'):
 			for exclude in wall['excludes']:
 				stroke(100)
 				fill(200)
-				rect((exclude['x'] + wall['x']) * scale, (exclude['y'] + wall['y']) * scale, exclude['w'] * scale, exclude['h'] * scale)
+				x = ((exclude['x'] + wall['x']) * scale) + pageMargin_x
+				y = ((exclude['y'] + wall['y']) * scale) + pageMargin_y
+				w = exclude['w'] * scale
+				h = exclude['h'] * scale
+				rect(x, y, w, h)
 
 def drawTiles(scale):
 	global allTiles
 	allTiles = []
-	tileSize = floor(30 * scale)
+	tileSize = floor(tileScale * scale)
 	count = 0
 	for wall in walls[:]:
 		# Per wall draw tiles
@@ -236,8 +263,8 @@ def drawTiles(scale):
 		if wall.has_key('offset'):
 			offsetx = wall['offset']['x'] * scale
 			offsety = wall['offset']['y'] * scale
-		wallx = wall['x'] * scale
-		wally = wall['y'] * scale
+		wallx = (wall['x'] * scale) 
+		wally = (wall['y'] * scale)
 		offsetx += wallx
 		offsety += wally
 		# create an thisWall Rect
@@ -287,7 +314,7 @@ def drawTiles(scale):
 						tilesArray.append(tileDict)
 					
 					# Draw on the screen
-					rect(x, y, tileSize, tileSize)
+					rect(x + pageMargin_x, y + pageMargin_y, tileSize, tileSize)
 					count += 1
 				else:
 					# Store in tilesArray
