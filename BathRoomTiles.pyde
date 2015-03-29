@@ -1,5 +1,7 @@
 
 # Global imports
+add_library('pdf')
+
 import json
 from datetime import datetime
 
@@ -103,6 +105,7 @@ colors = ["G1", "G2", "G3", "G2", "G3", "G2", "G3"]
 voeg = {'name': "voeg donker", 'r': 100, 'g': 100, 'b': 100}
 
 overview_scale = 0.3
+detail_scale = 1.0
 pageMargin_x = 25
 pageMargin_y = 25
 
@@ -160,12 +163,12 @@ def draw():
 	if (firstRun):
 		drawBackground(True)
 		drawOutlines(overview_scale)
-		drawTiles(overview_scale)
+		drawRandomTiles(overview_scale)
 		colorSamples()
 		firstRun = False
 
 def drawGrid():
-	drawOutlines(overview_scale)
+	drawOutlines(overview_scale, False)
 
 def drawBackground(onOverviewPage):
 	if onOverviewPage:
@@ -174,7 +177,7 @@ def drawBackground(onOverviewPage):
 		background(255, 255, 255)
 
 def drawRandom():
-	drawTiles(overview_scale)
+	drawRandomTiles(overview_scale)
 
 def saveDataAsJson(data, filename):
 	jsonData = json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '))
@@ -182,11 +185,33 @@ def saveDataAsJson(data, filename):
 	saveStrings(filename, jsonAsList)	
 	
 def save():
+	# 
 	# Saving the .json
 	timeName = "tegel_ontwerp_%s" % datetime.strftime(datetime.now(), "%d%b%y_%H.%M.%S")
-	jsonFile = "%s.json" % (timeName)
 	data = {'colors': allColors, 'walls': walls, 'allTiles': allTiles}
-	saveDataAsJson(data, jsonFile)
+	saveDataAsJson(data, "%s.json" % (timeName))
+	# 
+	# Creating a pdf
+	pdf = createGraphics(width, height, PDF, "%s.pdf" % (timeName));
+	beginRecord(pdf)
+	# Draw the first page
+	# Overview of all walls
+	drawTiles(overview_scale, allTiles)
+	# Draw the grid
+	drawOutlines(overview_scale, False)
+	# Summarize the colors
+	# 
+	# Draw per wall
+	# for tiledWall in allTiles[:]:
+	# 	# Next page
+	# 	pdf.nextPage()
+	# 	# White background
+	# 	drawBackground(False)
+	# 	# Draw the TilerSchema
+		
+		
+	# Save the pdf
+	endRecord()
 
 def keyPressed(event):
 	# cmd + g
@@ -224,11 +249,15 @@ def colorSamples():
 		x += s + m
 		
 	
-def drawOutlines(scale):
+def drawOutlines(scale, filled=True):
 	for wall in walls:
-		# Draw the wall
-		stroke(100)
-		fill(150)
+		# Draw the walls
+		if filled:
+			stroke(100)
+			fill(150)
+		else :	
+			stroke(0)
+			noFill()
 		x = (wall['x'] * scale) + pageMargin_x
 		y = (wall['y'] * scale) + pageMargin_y
 		w = wall['w'] * scale
@@ -237,18 +266,73 @@ def drawOutlines(scale):
 		# Draw the excludes
 		if wall.has_key('excludes'):
 			for exclude in wall['excludes']:
-				stroke(100)
-				fill(200)
+				if filled:
+					stroke(100)
+					fill(200)
+				else :	
+					stroke(50)
+					noFill()
 				x = ((exclude['x'] + wall['x']) * scale) + pageMargin_x
 				y = ((exclude['y'] + wall['y']) * scale) + pageMargin_y
 				w = exclude['w'] * scale
 				h = exclude['h'] * scale
 				rect(x, y, w, h)
 
-def drawTiles(scale):
+def tileSizeForScale(scale):
+	return floor(tileScale * scale)
+
+def drawTilerInstruction(tiledWall, scale):
+	# 
+	tileSize = tileSizeForScale(scale)
+	stroke(30, 30, 30)
+	noFill()
+	# 
+	y = 0
+	for tileRow in tiledWall['tiles']:
+		x = 0
+		for tileColorCode in tileRow:
+			if color:
+				rect(x + pageMargin_x, y + pageMargin_y, tileSize, tileSize)
+				text(x + pageMargin_x, y + pageMargin_y, tileColorCode)
+			x += tileSize
+		y += tileSize
+	
+
+def drawTiles(scale, tilesArray):
+	drawBackground(True)
+	# 
+	tileSize = tileSizeForScale(scale)
+	stroke (voeg['r'], voeg['g'], voeg['b'])
+	# draw all tiles
+	for tiledWall in tilesArray[:]:
+		wall = next((w for w in walls if w['name'] == tiledWall['wall_name']), None)
+		# Offset of the tiles on the wall
+		offsetx = 0
+		offsety = 0
+		if wall.has_key('offset'):
+			offsetx = wall['offset']['x'] * scale
+			offsety = wall['offset']['y'] * scale
+		wallx = (wall['x'] * scale) 
+		wally = (wall['y'] * scale)
+		offsetx += wallx
+		offsety += wally
+		# 
+		y = offsety
+		for tileRow in tiledWall['tiles']:
+			x = offsetx
+			for tileColorCode in tileRow:
+				# get the color
+				color = next((c for c in allColors if c['code'] == tileColorCode), None)
+				if color:
+					fill(color['r'], color['g'], color['b'])
+					rect(x + pageMargin_x, y + pageMargin_y, tileSize, tileSize)
+				x += tileSize
+			y += tileSize
+
+def drawRandomTiles(scale):
 	global allTiles
 	allTiles = []
-	tileSize = floor(tileScale * scale)
+	tileSize = tileSizeForScale(scale)
 	count = 0
 	for wall in walls[:]:
 		# Per wall draw tiles
