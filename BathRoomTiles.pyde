@@ -105,7 +105,7 @@ colors = ["G1", "G2", "G3", "G2", "G3", "G2", "G3"]
 voeg = {'name': "voeg donker", 'r': 100, 'g': 100, 'b': 100}
 
 overview_scale = 0.3
-detail_scale = 1.0
+detail_scale = 0.65
 pageMargin_x = 25
 pageMargin_y = 25
 
@@ -113,6 +113,7 @@ firstRun = True
 storeAsArray = True
 
 allTiles = []
+usedColors = []
 
 class Rect(object):
 	def __init__(self, x, y, w, h):
@@ -200,16 +201,16 @@ def save():
 	# Draw the grid
 	drawOutlines(overview_scale, False)
 	# Summarize the colors
+	usedColors = analyzeColors(allTiles)
 	# 
 	# Draw per wall
-	# for tiledWall in allTiles[:]:
-	# 	# Next page
-	# 	pdf.nextPage()
-	# 	# White background
-	# 	drawBackground(False)
-	# 	# Draw the TilerSchema
-		
-		
+	for tiledWall in allTiles[:]:
+		# Next page
+		pdf.nextPage()
+		# White background
+		drawBackground(False)
+		# Draw the TilerSchema
+		drawTilerInstruction(tiledWall, usedColors, detail_scale)
 	# Save the pdf
 	endRecord()
 
@@ -281,19 +282,59 @@ def drawOutlines(scale, filled=True):
 def tileSizeForScale(scale):
 	return floor(tileScale * scale)
 
-def drawTilerInstruction(tiledWall, scale):
+def analyzeColors(tilesArray):
+	colorDicts = []
+	# Count all unique colors
+	for tiledWall in tilesArray:
+		for tileRow in tiledWall['tiles']:
+			for tileColorCode in tileRow:
+				# Get the color
+				color = next((c for c in allColors if c['code'] == tileColorCode), None)
+				# Is there a color?
+				if color:
+					# Is this color allready in the array?
+					uniqueColor = next((c for c in colorDicts if c['colorCode'] == tileColorCode), None)
+					if uniqueColor:
+						# Increment the counter
+						uniqueColor['count'] += 1
+					else:
+						# Create a new color dict
+						newColor = {}
+						newColor['colorCode'] = color['code']
+						newColor['name'] = color['name']
+						newColor['r'] = color['r']
+						newColor['g'] = color['g']
+						newColor['b'] = color['b']
+						newColor['count'] = 1
+						colorDicts.append(newColor)
+	# Sort by occurance
+	sortedColors = sorted(colorDicts, key = lambda c: c['count'], reverse = True)
+	# Add instruction character
+	for i, color in enumerate(sortedColors):
+		color['code'] = chr(65 + i)
+	return sortedColors
+
+def drawTilerInstruction(tiledWall, uniqueColors, scale):
 	# 
 	tileSize = tileSizeForScale(scale)
-	stroke(30, 30, 30)
+	textMargin_x = tileSize * 0.2
+	textMargin_y = tileSize * 0.8
+	textSize(14)
 	noFill()
 	# 
 	y = 0
 	for tileRow in tiledWall['tiles']:
 		x = 0
 		for tileColorCode in tileRow:
+			# Get the color
+			color = next((c for c in uniqueColors if c['colorCode'] == tileColorCode), None)
+			noFill()
+			stroke(30, 30, 30)
+			rect(x + pageMargin_x, y + pageMargin_y, tileSize, tileSize)
 			if color:
-				rect(x + pageMargin_x, y + pageMargin_y, tileSize, tileSize)
-				text(x + pageMargin_x, y + pageMargin_y, tileColorCode)
+				noStroke()
+				fill(0,0,0)
+				text(color['code'], x + pageMargin_x + textMargin_x, y + pageMargin_y + textMargin_y)
 			x += tileSize
 		y += tileSize
 	
@@ -304,7 +345,7 @@ def drawTiles(scale, tilesArray):
 	tileSize = tileSizeForScale(scale)
 	stroke (voeg['r'], voeg['g'], voeg['b'])
 	# draw all tiles
-	for tiledWall in tilesArray[:]:
+	for tiledWall in tilesArray:
 		wall = next((w for w in walls if w['name'] == tiledWall['wall_name']), None)
 		# Offset of the tiles on the wall
 		offsetx = 0
