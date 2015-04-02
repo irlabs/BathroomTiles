@@ -105,9 +105,10 @@ colors = ["G1", "G2", "G3", "G2", "G3", "G2", "G3"]
 voeg = {'name': "voeg donker", 'r': 100, 'g': 100, 'b': 100}
 
 overview_scale = 0.3
-detail_scale = 0.65
+detail_scale = 0.6
 pageMargin_x = 25
 pageMargin_y = 25
+summaryOffset_y = 300
 
 firstRun = True
 storeAsArray = True
@@ -165,7 +166,7 @@ def draw():
 		drawBackground(True)
 		drawOutlines(overview_scale)
 		drawRandomTiles(overview_scale)
-		colorSamples()
+		drawColorSamples(allColors, 50, 400)
 		firstRun = False
 
 def drawGrid():
@@ -202,6 +203,8 @@ def save():
 	drawOutlines(overview_scale, False)
 	# Summarize the colors
 	usedColors = analyzeColors(allTiles)
+	# Draw used colors
+	drawUsedColors(usedColors)
 	# 
 	# Draw per wall
 	for tiledWall in allTiles[:]:
@@ -213,6 +216,9 @@ def save():
 		drawTilerInstruction(tiledWall, usedColors, detail_scale)
 	# Save the pdf
 	endRecord()
+	# Restore current overview
+	drawTiles(overview_scale, allTiles)
+	drawUsedColors(usedColors)
 
 def keyPressed(event):
 	# cmd + g
@@ -221,8 +227,11 @@ def keyPressed(event):
 		drawGrid()
 	# cmd + r
 	if (keyCode == 82) and (event.isMetaDown()): # 82 = r, meta = cmd
-		print "New Random"
+		drawBackground(True)
+		drawOutlines(overview_scale)
 		drawRandom()
+		usedColors = analyzeColors(allTiles)
+		drawUsedColors(usedColors)
 	# cmd + s
 	if (keyCode == 83) and (event.isMetaDown()): # 83 = s, meta = cmd
 		print "Saving ..."
@@ -230,24 +239,19 @@ def keyPressed(event):
 	if False:
 		print "keyCode: %d -  modifiers: %d" % (keyCode, event.getModifiers())
 	
-def colorSamples():
-	bx = 50
-	y = 400
-	s = 20
-	m = 2
-	x = bx
-	# for color in colors:
-	# 	stroke (voeg['r'], voeg['g'], voeg['b'])
-	# 	fill(color['r'], color['g'], color['b'])
-	# 	rect (x, y, s, s)
-	# 	x += s + m
-	y += s + m
-	x = bx
-	for color in allColors:
+def drawColorSamples(fromColors, startX, startY, drawHorizontal = True):
+	s = 17
+	m = 3
+	x = startX
+	y = startY
+	for color in fromColors:
 		stroke (voeg['r'], voeg['g'], voeg['b'])
 		fill(color['r'], color['g'], color['b'])
 		rect (x, y, s, s)
-		x += s + m
+		if drawHorizontal:
+			x += s + m
+		else:
+			y += s + m
 		
 	
 def drawOutlines(scale, filled=True):
@@ -279,8 +283,20 @@ def drawOutlines(scale, filled=True):
 				h = exclude['h'] * scale
 				rect(x, y, w, h)
 
+def drawUsedColors(uniqueColors):
+	# Draw the text
+	usedColorTextSize = 15
+	textSize(usedColorTextSize)
+	noStroke()
+	fill(50)
+	text("Summary of used colors:", pageMargin_x, summaryOffset_y);
+	for i, color in enumerate(uniqueColors):
+		text("%s = %s:  \t%d tiles" % (color['code'], color['name'], color['count']), pageMargin_x, summaryOffset_y + ((i + 1) * (usedColorTextSize + 5)));
+	# Draw the color swatches
+	drawColorSamples(uniqueColors, pageMargin_x + 200, summaryOffset_y + 4, False)
+
 def tileSizeForScale(scale):
-	return floor(tileScale * scale)
+	return floor(round(tileScale * scale))
 
 def analyzeColors(tilesArray):
 	colorDicts = []
@@ -337,7 +353,32 @@ def drawTilerInstruction(tiledWall, uniqueColors, scale):
 				text(color['code'], x + pageMargin_x + textMargin_x, y + pageMargin_y + textMargin_y)
 			x += tileSize
 		y += tileSize
-	
+	# Draw the title of the wall
+	text(tiledWall['wall_name'], x + (pageMargin_x * 2), (pageMargin_y * 2))
+	# Draw the outline of the wall
+	wall = next((w for w in walls if w['name'] == tiledWall['wall_name']), None)
+	offsetx = 0
+	offsety = 0
+	if wall.has_key('offset'):
+		offsetx = wall['offset']['x'] * -scale
+		offsety = wall['offset']['y'] * -scale
+	offsetx += pageMargin_x
+	offsety += pageMargin_y
+	w = wall['w'] * scale
+	h = wall['h'] * scale
+	noFill()
+	stroke(255, 0, 0);
+	rect(offsetx, offsety, w, h)
+	# Draw the excludes
+	if wall.has_key('excludes'):
+		for exclude in wall['excludes']:
+			noFill()
+			stroke(255, 60, 60)
+			x = (exclude['x'] * scale) + offsetx
+			y = (exclude['y'] * scale) + offsety
+			w = exclude['w'] * scale
+			h = exclude['h'] * scale
+			rect(x, y, w, h)
 
 def drawTiles(scale, tilesArray):
 	drawBackground(True)
