@@ -104,15 +104,26 @@ colors = ["G1", "G2", "G3", "G2", "G3", "G2", "G3"]
 
 voeg = {'name': "voeg donker", 'r': 100, 'g': 100, 'b': 100}
 
+# Scale factors
 overview_scale = 0.3
 detail_scale = 0.6
+
+# Page margins and other elements
 pageMargin_x = 25
 pageMargin_y = 25
 summaryOffset_y = 300
+savedNoticeRect = (280, 300, 230, 40)
 
-firstRun = True
+# Colors
+editorBackgroundColor = color(200, 200, 200)
+instructionBackgroundColor = color(255, 255, 255)
+
+# Defaults
 storeAsArray = True
 
+# Global variables
+firstRun = True
+savedNoticeAlpha = 255
 allTiles = []
 usedColors = []
 
@@ -174,22 +185,29 @@ def setup():
 	size(floor(round(docW)), floor(round(docH)));
 		
 def draw():
-	global firstRun
+	global firstRun, savedNoticeAlpha
 	if (firstRun):
 		drawBackground(True)
 		drawOutlines(overview_scale)
 		drawRandomTiles(overview_scale)
 		drawColorSamples(allColors, 50, 400)
 		firstRun = False
+	# Draw saved notice fade-out pane
+	if savedNoticeAlpha < 255:
+		savedNoticeAlpha += 1
+		print savedNoticeAlpha
+		noStroke()
+		fill(red(editorBackgroundColor), green(editorBackgroundColor), blue(editorBackgroundColor), savedNoticeAlpha)
+		rect(savedNoticeRect[0], savedNoticeRect[1], savedNoticeRect[2], savedNoticeRect[3])
 
 def drawGrid():
 	drawOutlines(overview_scale, False)
 
 def drawBackground(onOverviewPage):
 	if onOverviewPage:
-		background(200, 200, 200)
+		background(editorBackgroundColor)
 	else:
-		background(255, 255, 255)
+		background(instructionBackgroundColor)
 
 def drawRandom():
 	drawRandomTiles(overview_scale)
@@ -200,6 +218,7 @@ def saveDataAsJson(data, filename):
 	saveStrings(filename, jsonAsList)	
 	
 def save():
+	global savedNoticeAlpha
 	# 
 	# Saving the .json
 	timeName = "tegel_ontwerp_%s" % datetime.strftime(datetime.now(), "%d%b%y_%H.%M.%S")
@@ -232,6 +251,12 @@ def save():
 	# Restore current overview
 	drawTiles(overview_scale, allTiles)
 	drawUsedColors(usedColors)
+	# Draw the "Saved a version" notification
+	fill(0)
+	noStroke()
+	savedNoticeAlpha = 0
+	textSize(28)
+	text("Saved a version", savedNoticeRect[0], savedNoticeRect[1], savedNoticeRect[2], savedNoticeRect[3])
 
 def keyPressed(event):
 	# cmd + g
