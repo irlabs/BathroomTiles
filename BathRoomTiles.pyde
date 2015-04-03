@@ -8,11 +8,19 @@ from datetime import datetime
 # Walls
 tileScale = 30 # 30 pixels per 10 cm. / 10 cm tiles
 
+# Total height = 795
+# Total lenght = 2526 (777 + 270 + (153 - 60) + 270 + 870 + 246) (on eye height)
+# length on corner: 2280
+
 walls = [
 	{
 		'name': "meubelwand",
 		'w': 777, 'h': 795, 'x': 0, 'y': 0,
 		'offset': {'x': -2, 'y': -14},
+		'maps': [
+			{'type': "surround", 'x1': 0.0, 'x2': 0.308, 'y1': 0.0, 'y2': 0.0},
+			{'type': "floor", 'x1': 0.0, 'x2': 0.0, 'y1': 0.0, 'y2': 1.0}
+		],
 		'excludes': [{
 			'w': 60, 'h': 375, 'x': 717, 'y': 420
 		}]
@@ -20,17 +28,29 @@ walls = [
 	{
 		'name': "wc_achter_hoog",
 		'w': 270, 'h': 419, 'x': 777, 'y':0,
-		'offset': {'x': 1, 'y': -14}
+		'offset': {'x': 1, 'y': -14},
+		'maps': [
+			{'type': "surround", 'x1': 0.308, 'x2': 0.414, 'y1': 0.0, 'y2': 0.0},
+			{'type': "floor", 'x1': 0.0, 'x2': 0.0, 'y1': 0.0, 'y2': 0.473}
+		],
 	},
 	{
 		'name': "wc_achter_boven",
 		'w': 270, 'h': 60, 'x': 777, 'y':419,
-		'offset': {'x': 1, 'y': 1}
+		'offset': {'x': 1, 'y': 1},
+		'maps': [
+			{'type': "surround", 'x1': 0.308, 'x2': 0.414, 'y1': 0.0, 'y2': -0.012},
+			{'type': "floor", 'x1': 0.0, 'x2': 0.0, 'y1': 0.473, 'y2': 0.473}
+		],
 	},
 	{
 		'name': "wc_achter_laag",
 		'w': 300, 'h': 375, 'x': 777, 'y':479,
 		'offset': {'x': 1, 'y': -14},
+		'maps': [
+			{'type': "surround", 'x1': 0.296, 'x2': 0.402, 'y1': 0.0, 'y2': 0.0},
+			{'type': "floor", 'x1': 0.0, 'x2': 0.0, 'y1': 0.473, 'y2': 1.0}
+		],
 		'excludes': [{
 			'w': 30, 'h': 198, 'x': 270, 'y': 0
 		}]
@@ -39,6 +59,10 @@ walls = [
 		'name': "bad_zijwand",
 		'w': 153, 'h': 618, 'x': 1077, 'y':0,
 		'offset': {'x': 0, 'y': -14},
+		'maps': [
+			{'type': "surround", 'x1': 0.391, 'x2': 0.451, 'y1': 0.0, 'y2': 0.0},
+			{'type': "floor", 'x1': 0.0, 'x2': 0.0, 'y1': 0.0, 'y2': 0.777}
+		],
 		'excludes': [{
 			'w': 60, 'h': 420, 'x': 0, 'y': 0
 		}]
@@ -46,17 +70,29 @@ walls = [
 	{
 		'name': "bad_rand",
 		'w': 153, 'h': 30, 'x': 1077, 'y':618,
-		'offset': {'x': 0, 'y': 1}
+		'offset': {'x': 0, 'y': 1},
+		'maps': [
+			{'type': "surround", 'x1': 0.391, 'x2': 0.451, 'y1': 0.0, 'y2': 0.0},
+			{'type': "floor", 'x1': 0.0, 'x2': 0.0, 'y1': 0.777, 'y2': 0.777}
+		],
 	},
 	{
 		'name': "bad_achter",
 		'w': 270, 'h': 618, 'x': 1230, 'y':0,
-		'offset': {'x': 1, 'y': -14}
+		'offset': {'x': 1, 'y': -14},
+		'maps': [
+			{'type': "surround", 'x1': 0.451, 'x2': 0.558, 'y1': 0.0, 'y2': 0.0},
+			{'type': "floor", 'x1': 0.0, 'x2': 0.0, 'y1': 0.0, 'y2': 0.777}
+		],
 	},
 	{
 		'name': "bad_wand",
 		'w': 870, 'h': 795, 'x': 1500, 'y':0,
 		'offset': {'x': 0, 'y': -14},
+		'maps': [
+			{'type': "surround", 'x1': 0.558, 'x2': 0.903, 'y1': 0.0, 'y2': 0.0},
+			{'type': "floor", 'x1': 0.0, 'x2': 0.0, 'y1': 0.0, 'y2': 1.0}
+		],
 		'excludes': [{
 			'w': 540, 'h': 177, 'x': 0, 'y': 618
 		}]
@@ -64,12 +100,20 @@ walls = [
 	{
 		'name': "douche_wand",
 		'w': 246, 'h': 795, 'x': 2370, 'y':0,
-		'offset': {'x': 0, 'y': -14}
+		'offset': {'x': 0, 'y': -14},
+		'maps': [
+			{'type': "surround", 'x1': 0.903, 'x2': 1.0, 'y1': 0.0, 'y2': 0.0},
+			{'type': "floor", 'x1': 0.0, 'x2': 0.0, 'y1': 0.0, 'y2': 1.0}
+		],
 	},
 	{
 		'name': "vloer",
 		'w': 717, 'h': 540, 'x': 1653, 'y':795,
 		'offset': {'x': -3, 'y': 0},
+		'maps': [
+			{'type': "surround", 'x1': 0.5, 'x2': 0.5, 'y1': 0.0, 'y2': 0.0},
+			{'type': "floor", 'x1': 0.0, 'x2': 0.0, 'y1': 1.0, 'y2': 1.0}
+		],
 		'excludes': [{
 			'w': 387, 'h': 240, 'x': 0, 'y': 0
 		}]
@@ -77,12 +121,20 @@ walls = [
 	{
 		'name': "bad_ombouw_kop",
 		'w': 240, 'h': 168, 'x': 1800, 'y':627,
-		'offset': {'x': 0, 'y': -11}
+		'offset': {'x': 0, 'y': -11},
+		'maps': [
+			{'type': "surround", 'x1': 0.677, 'x2': 0.772, 'y1': 0.0, 'y2': 0.0},
+			{'type': "floor", 'x1': 0.0, 'x2': 0.0, 'y1': 0.789, 'y2': 1.0}
+		],
 	},
 	{
 		'name': "bad_ombouw_zij",
 		'w': 387, 'h': 168, 'x': 1653, 'y':867,
-		'offset': {'x': -3, 'y': -11}
+		'offset': {'x': -3, 'y': -11},
+		'maps': [
+			{'type': "surround", 'x1': 0.402, 'x2': 0.677, 'y1': 0.0, 'y2': 0.0},
+			{'type': "floor", 'x1': 0.0, 'x2': 0.0, 'y1': 0.789, 'y2': 1.0}
+		],
 	},
 ]
 
