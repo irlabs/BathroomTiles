@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>currentDocument</key>
+	<string>tetst/tetst.pyde</string>
+	<key>documents</key>
+	<array>
+		<dict>
+			<key>filename</key>
+			<string>BathRoomTiles.pyde</string>
+			<key>lastUsed</key>
+			<date>2015-04-03T19:28:23Z</date>
+		</dict>
+		<dict>
+			<key>filename</key>
+			<string>RectangleGeometry.py</string>
+		</dict>
+		<dict>
+			<key>filename</key>
+			<string>ValueSlider.py</string>
+		</dict>
+		<dict>
+			<key>filename</key>
+			<string>../tetst/tetst.pyde</string>
+			<key>lastUsed</key>
+			<date>2015-04-03T19:28:23Z</date>
+			<key>selected</key>
+			<true/>
+		</dict>
+	</array>
+	<key>fileHierarchyDrawerWidth</key>
+	<integer>329</integer>
+	<key>metaData</key>
+	<dict>
+		<key>BathroomTiles/BathRoomTiles.pyde</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>70</integer>
+				<key>line</key>
+				<integer>134</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>tetst/tetst.pyde</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+	</dict>
+	<key>openDocuments</key>
+	<array>
+		<string>BathroomTiles/BathRoomTiles.pyde</string>
+		<string>tetst/tetst.pyde</string>
+	</array>
+	<key>showFileHierarchyDrawer</key>
+	<true/>
+	<key>windowFrame</key>
+	<string>{{10, 115}, {938, 663}}</string>
+</dict>
+</plist>
