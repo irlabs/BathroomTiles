@@ -56,7 +56,7 @@ walls = [
 	{
 		'name': "bad_wand",
 		'w': 870, 'h': 795, 'x': 1500, 'y':0,
-		'offset': {'x': 1, 'y': -14},
+		'offset': {'x': 0, 'y': -14},
 		'excludes': [{
 			'w': 540, 'h': 177, 'x': 0, 'y': 618
 		}]
@@ -64,12 +64,12 @@ walls = [
 	{
 		'name': "douche_wand",
 		'w': 246, 'h': 795, 'x': 2370, 'y':0,
-		'offset': {'x': 1, 'y': -14}
+		'offset': {'x': 0, 'y': -14}
 	},
 	{
 		'name': "vloer",
 		'w': 717, 'h': 540, 'x': 1653, 'y':795,
-		'offset': {'x': -1, 'y': 0},
+		'offset': {'x': -3, 'y': 0},
 		'excludes': [{
 			'w': 387, 'h': 240, 'x': 0, 'y': 0
 		}]
@@ -77,12 +77,12 @@ walls = [
 	{
 		'name': "bad_ombouw_kop",
 		'w': 240, 'h': 168, 'x': 1800, 'y':627,
-		'offset': {'x': 1, 'y': -11}
+		'offset': {'x': 0, 'y': -11}
 	},
 	{
 		'name': "bad_ombouw_zij",
 		'w': 387, 'h': 168, 'x': 1653, 'y':867,
-		'offset': {'x': -1, 'y': -11}
+		'offset': {'x': -3, 'y': -11}
 	},
 ]
 
@@ -141,10 +141,12 @@ class Rect(object):
 		return False	
 		
 	def insideRectButNotIn(self, allRect, exRect):
-		pointTL = (self.x, self.y)
-		pointTR = (self.x + self.w, self.y)
-		pointBL = (self.x, self.y + self.h)
-		pointBR = (self.x + self.w, self.y + self.h)
+		# Make self just a tiny bit smaller, to compansate for edge cases (literally edge-cases)
+		tinyM = 0.1
+		pointTL = (self.x + tinyM, self.y + tinyM)
+		pointTR = (self.x + self.w - tinyM, self.y + tinyM)
+		pointBL = (self.x + tinyM, self.y + self.h - tinyM)
+		pointBR = (self.x + self.w - tinyM, self.y + self.h - tinyM)
 		topLeft = allRect.containsPoint(pointTL) and (not exRect.containsPoint(pointTL))
 		topRight = allRect.containsPoint(pointTR) and (not exRect.containsPoint(pointTR))
 		bottomLeft = allRect.containsPoint(pointBL) and (not exRect.containsPoint(pointBL))
