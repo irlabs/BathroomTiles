@@ -157,7 +157,7 @@ allColors = [
 	{'code': "Z4", 'name': "gris pale", 'r': 210, 'g': 210, 'b': 210},
 ]
 
-colors = ["G1", "G2", "G3", "G2", "G3", "G2", "G3"]
+defaultColors = ["G1", "G2", "G3", "G2", "G3", "G2", "G3"]
 
 voeg = {'name': "voeg donker", 'r': 100, 'g': 100, 'b': 100}
 
@@ -220,12 +220,13 @@ def draw():
 		drawBackground(True)
 		drawOutlines(overview_scale)
 		drawRandomTiles(overview_scale)
-		drawColorSamples(allColors, 50, 400)
+		# drawColorSamples(allColors, 50, 400)
+		usedColors = analyzeColors(allTiles)
+		drawUsedColors(usedColors)
 		firstRun = False
 	# Draw saved notice fade-out pane
 	if savedNoticeAlpha < 255:
 		savedNoticeAlpha += 1
-		print savedNoticeAlpha
 		noStroke()
 		fill(red(editorBackgroundColor), green(editorBackgroundColor), blue(editorBackgroundColor), savedNoticeAlpha)
 		rect(savedNoticeRect[0], savedNoticeRect[1], savedNoticeRect[2], savedNoticeRect[3])
@@ -536,17 +537,30 @@ def drawRandomTiles(scale):
 					shouldInclude = True
 				# Only draw the tiles if not inside an exclude
 				if shouldInclude:
+					# Interpolate Mapped Values for middle of the tile
+					mapValues = {}
+					midX = x + (tileSize / 2.0)
+					minX = wallx
+					maxX = minX + w
+					midY = y + (tileSize / 2.0)
+					minY = wally
+					maxY = minY + h
+					if wall.has_key('maps'):
+						for aMap in wall['maps']:
+							xComponent = map(midX, minX, maxX, aMap['x1'], aMap['x2'])
+							yComponent = map(midY, minY, maxY, aMap['y1'], aMap['y2'])
+							mapValues[aMap['type']] = xComponent + yComponent
 					# pick random tile
-					colorCode = colors[int(random(len(colors)))]
-					color = next((c for c in allColors if c['code'] == colorCode), None)
-					fill(color['r'], color['g'], color['b'])
+					randomColorCode = randomColorCodeForMapValues(mapValues['surround'], mapValues['floor'])
+					randomColor = colorForColorCode(randomColorCode)
+					fill(randomColor)
 					
 					# Store in tilesArray
 					if storeAsArray:
-						tilesRow.append(colorCode)
+						tilesRow.append(randomColorCode)
 					else:
 						tileDict = {}
-						tileDict['c'] = colorCode
+						tileDict['c'] = randomColorCode
 						tileDict['x'] = round((x - wallx) / scale)
 						tileDict['y'] = round((y - wally) / scale)
 						tilesArray.append(tileDict)
@@ -565,4 +579,37 @@ def drawRandomTiles(scale):
 			y += tileSize
 		tilesOnWall['tiles'] = tilesArray
 		allTiles.append(tilesOnWall)
-	# print "total tiles: %d" % count		
+	# print "total tiles: %d" % count
+	
+def randomColorCodeForMapValues(surround = 0.0, floor = 0.0):
+	global horizontalCtrl
+	# Create weighted color list
+	weightedChoices = []
+	for c in allColors:
+		# Surround influence
+		weight = horizontalCtrl.valueForKeyAtPosition(c['code'], surround)
+		if weight > 0.0:
+			weightedChoices.append((c['code'], weight))
+	if weightedChoices:
+		return weightedRandom(weightedChoices)
+	else:
+		colorCode = defaultColors[int(random(len(defaultColors)))]
+		return colorCode
+
+def weightedRandom(choices):
+	total = sum(w for c, w in choices)
+	r = random(total)
+	upto = 0
+	for c, w in choices:
+		if upto + w >= r:
+			return c
+		upto += w
+	assert False, "Shouldn't get here"
+	
+def colorForColorCode(colorCode):
+	col = next((c for c in allColors if c['code'] == colorCode), None)
+	return color(col['r'], col['g'], col['b'])
+	
+
+
+
