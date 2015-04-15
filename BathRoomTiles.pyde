@@ -1,10 +1,11 @@
 
 # Global imports
 add_library('pdf')
+add_library('controlP5')
 
 # Import project dependencies
 from RectangleGeometry import Rect
-from ValueSlider import Slider
+from GradientSliders import GradientController
 
 import json
 from datetime import datetime
@@ -184,6 +185,7 @@ allTiles = []
 usedColors = []
 
 def setup():
+	global horizontalCtrl
 	
 	# size(872, 445)
 	# size(900, 600)
@@ -197,9 +199,23 @@ def setup():
 	docW = (A4Landscape_w / cmInch) * dpi 
 	docH = (A4Landscape_h / cmInch) * dpi
 	size(floor(round(docW)), floor(round(docH)));
+	
+	# Horizontal Gradient Control
+	cp5 = ControlP5(this)
+	horizontalCtrl = GradientController(allColors, cp5, Slider)
+	# The order of settings is important
+	horizontalCtrl.setPosition(20, 440)
+	horizontalCtrl.setSize(700, 100)
+	horizontalCtrl.setSliderSize(50, 10)
+	horizontalCtrl.addOuterColorStops()
+	horizontalCtrl.insertColorStop(0.4)
+	# horizontalCtrl.insertColorStop(0.7)
+	horizontalCtrl.addStopPositionSliders()
+
 		
 def draw():
 	global firstRun, savedNoticeAlpha
+	global horizontalCtrl
 	if (firstRun):
 		drawBackground(True)
 		drawOutlines(overview_scale)
@@ -213,6 +229,10 @@ def draw():
 		noStroke()
 		fill(red(editorBackgroundColor), green(editorBackgroundColor), blue(editorBackgroundColor), savedNoticeAlpha)
 		rect(savedNoticeRect[0], savedNoticeRect[1], savedNoticeRect[2], savedNoticeRect[3])
+	# Drawing the Horizontal Gradient Control
+	if horizontalCtrl:
+		horizontalCtrl.display()
+	
 
 def drawGrid():
 	drawOutlines(overview_scale, False)
