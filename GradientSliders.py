@@ -25,6 +25,7 @@ class GradientController(object):
 		self.allStops = []
 		self.callbackActive = True
 		self.testLerpSlider = None
+		self.needsDisplay = True
 	
 	def setPosition(self, x, y):
 		self.x = x
@@ -87,6 +88,7 @@ class GradientController(object):
 			# Move stop
 			self.allStops[1]['position'] = aSlider.getValue() / 100.0
 			self.recalcSubStopPositions()
+		self.needsDisplay = True
 		
 	def stopPositionDidChange(self, aSlider):
 		print "stopPositionDidChange"
@@ -94,7 +96,9 @@ class GradientController(object):
 	def display(self):
 		# Sliders are drawn by cp5
 		# draw graph
-		self.drawGraph(self.allStops)
+		if self.needsDisplay:
+			self.drawGraph(self.allStops)
+			self.needsDisplay = False
 	
 	def getSliderValues(self):
 		stopsData = []
@@ -317,6 +321,7 @@ class GradientController(object):
 			for colorStop in self.allStops:
 				if aSlider in colorStop['sliders']:
 					self.recalculateStopValues(colorStop['sliders'], aSlider)
+		self.needsDisplay = True
 					
 	def sliderReleased(self, aSlider):
 		print "slider released -- update render"
