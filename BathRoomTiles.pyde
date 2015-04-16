@@ -161,6 +161,9 @@ defaultColors = ["G1", "G2", "G3", "G2", "G3", "G2", "G3"]
 
 voeg = {'name': "voeg donker", 'r': 100, 'g': 100, 'b': 100}
 
+# Slider Values .json
+sliderConfigurationFile = "gradient_sliders.json"
+
 # Scale factors
 overview_scale = 0.3
 detail_scale = 0.6
@@ -185,8 +188,6 @@ allTiles = []
 usedColors = []
 
 def setup():
-	global horizontalCtrl
-	
 	# size(872, 445)
 	# size(900, 600)
 	# noLoop()
@@ -200,18 +201,52 @@ def setup():
 	docH = (A4Landscape_h / cmInch) * dpi
 	size(floor(round(docW)), floor(round(docH)));
 	
-	# Horizontal Gradient Control
-	cp5 = ControlP5(this)
-	horizontalCtrl = GradientController(allColors, cp5, Slider)
-	# The order of settings is important
-	horizontalCtrl.setPosition(20, 440)
-	horizontalCtrl.setSize(700, 100)
-	horizontalCtrl.setSliderSize(50, 10)
-	horizontalCtrl.addOuterColorStops()
-	horizontalCtrl.insertColorStop(0.4)
-	# horizontalCtrl.insertColorStop(0.7)
-	horizontalCtrl.addStopPositionSliders()
-
+	setupSliders()
+	
+def setupSliders():
+	global horizontalCtrl
+	# See if there is a gradient_sliders.json file to load
+	jsonLines = loadStrings(sliderConfigurationFile)
+	if jsonLines:
+		# Parse the json
+		sliderData = json.loads('\n'.join(jsonLines))
+		# Load the ControlP5
+		cp5 = ControlP5(this)
+		
+		# Create the horizontal control
+		if sliderData.has_key('surround'):
+			if sliderData['surround'].has_key('stops'):
+				stops = sliderData['surround']['stops']
+				horizontalCtrl = GradientController(allColors, cp5, Slider)
+				# The order of settings is important
+				horizontalCtrl.setPosition(20, 440)
+				horizontalCtrl.setSize(700, 100)
+				horizontalCtrl.setSliderSize(50, 10)
+				horizontalCtrl.addOuterColorStops()
+				# See if it needs additional color stops
+				if len(stops) > 2:
+					for subStop in stops[1:-1]:
+						horizontalCtrl.insertColorStop(subStop['position'])
+				horizontalCtrl.recalcSubStopPositions()
+				horizontalCtrl.addStopPositionSliders()
+				# Set the color values
+				horizontalCtrl.setSliderValues(stops)
+			
+		if sliderData.has_key('floor'):
+			pass
+	else:
+		print "No slider settings found -- Initialize with default values"
+		# Horizontal Gradient Control
+		cp5 = ControlP5(this)
+		horizontalCtrl = GradientController(allColors, cp5, Slider)
+		# The order of settings is important
+		horizontalCtrl.setPosition(20, 440)
+		horizontalCtrl.setSize(700, 100)
+		horizontalCtrl.setSliderSize(50, 10)
+		horizontalCtrl.addOuterColorStops()
+		horizontalCtrl.insertColorStop(0.4)
+		# horizontalCtrl.insertColorStop(0.7)
+		horizontalCtrl.addStopPositionSliders()
 		
 def draw():
 	global firstRun, savedNoticeAlpha
@@ -254,10 +289,16 @@ def saveDataAsJson(data, filename):
 	
 def save():
 	global savedNoticeAlpha
+	global horizontalCtrl
+	# 
+	# Saving the gradient slider states
+	sliderData = {'surround': horizontalCtrl.getSliderValues()}
+	# sliderData['floor'] = verticalCtrl.getSliderValues()
+	saveDataAsJson(sliderData, sliderConfigurationFile)
 	# 
 	# Saving the .json
 	timeName = "tegel_ontwerp_%s" % datetime.strftime(datetime.now(), "%d%b%y_%H.%M.%S")
-	data = {'colors': allColors, 'walls': walls, 'allTiles': allTiles}
+	data = {'colors': allColors, 'walls': walls, 'allTiles': allTiles, 'sliders': sliderData}
 	saveDataAsJson(data, "%s.json" % (timeName))
 	# 
 	# Creating a pdf

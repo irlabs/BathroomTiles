@@ -95,6 +95,36 @@ class GradientController(object):
 		# Sliders are drawn by cp5
 		# draw graph
 		self.drawGraph(self.allStops)
+	
+	def getSliderValues(self):
+		stopsData = []
+		for cStop in self.allStops:
+			thisStop = {'position': cStop['position']}
+			sliders = {}
+			for i, slider in enumerate(cStop['sliders']):
+				sliders[self.colorList[i]['code']] = slider.getValue()
+			thisStop['values'] = sliders
+			stopsData.append(thisStop) 
+		return {'stops': stopsData}
+	
+	def setSliderValues(self, stopsData):
+		if len(stopsData) == len(self.allStops):
+			self.callbackActive = False
+			for i, stopValues in enumerate(stopsData):
+				theStop = self.allStops[i]
+				theStop['position'] = stopValues['position']
+				if stopValues.has_key('values'):
+					if len(theStop['sliders']) != len(stopValues['values'].keys()):
+						print "WARNING: Possible problem setting slider values - number of colors not matching"
+					for key, value in stopValues['values'].iteritems():
+						indexOfSlider = next(index for (index, c) in enumerate(self.colorList) if c['code'] == key)
+						slider = theStop['sliders'][indexOfSlider]
+						slider.setValue(value)
+				else:
+					print "ERROR: Setting Slider Values Failed - 'values' key missing"
+			self.callbackActive = True
+		else:
+			print "ERROR: Setting Slider Values Failed - number of stops not matching"
 		
 	def valueForKeyAtPosition(self, key, inFloat):
 		# Find the index of the color with key
