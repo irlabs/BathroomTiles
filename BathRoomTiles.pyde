@@ -204,7 +204,17 @@ def setup():
 	setupSliders()
 	
 def setupSliders():
-	global horizontalCtrl
+	global horizontalCtrl, verticalCtrl
+	x = 20
+	y = 445
+	h = 100 # unused
+	w = 400
+	x2 = 500
+	y2 = 433
+	w2 = 250
+	slider_h = 10
+	slider_w = 50
+	
 	# See if there is a gradient_sliders.json file to load
 	jsonLines = loadStrings(sliderConfigurationFile)
 	if jsonLines:
@@ -218,10 +228,11 @@ def setupSliders():
 			if sliderData['surround'].has_key('stops'):
 				stops = sliderData['surround']['stops']
 				horizontalCtrl = GradientController(allColors, cp5, Slider)
+				horizontalCtrl.controllerIdentity = 1
 				# The order of settings is important
-				horizontalCtrl.setPosition(20, 440)
-				horizontalCtrl.setSize(700, 100)
-				horizontalCtrl.setSliderSize(50, 10)
+				horizontalCtrl.setPosition(x, y)
+				horizontalCtrl.setSize(w, h)
+				horizontalCtrl.setSliderSize(slider_w, slider_h)
 				horizontalCtrl.addOuterColorStops()
 				# See if it needs additional color stops
 				if len(stops) > 2:
@@ -231,6 +242,30 @@ def setupSliders():
 				horizontalCtrl.addStopPositionSliders()
 				# Set the color values
 				horizontalCtrl.setSliderValues(stops)
+		
+		# Create the vertical control
+		if sliderData.has_key('floor'):
+			if sliderData['floor'].has_key('stops'):
+				stops = sliderData['floor']['stops']
+				# Add transparent color
+				colorsIncludingTransparant = [{'code': "__", 'name': "clear"}]
+				for c in allColors:
+					colorsIncludingTransparant.append(c)
+				verticalCtrl = GradientController(colorsIncludingTransparant, cp5, Slider)
+				verticalCtrl.controllerIdentity = 2
+				# The order of settings is important
+				verticalCtrl.setPosition(x2, y2)
+				verticalCtrl.setSize(w2, h)
+				verticalCtrl.setSliderSize(slider_w, slider_h)
+				verticalCtrl.addOuterColorStops()
+				# See if it needs additional color stops
+				if len(stops) > 2:
+					for subStop in stops[1:-1]:
+						verticalCtrl.insertColorStop(subStop['position'])
+				verticalCtrl.recalcSubStopPositions()
+				verticalCtrl.addStopPositionSliders()
+				# Set the color values
+				verticalCtrl.setSliderValues(stops)
 			
 		if sliderData.has_key('floor'):
 			pass
@@ -239,18 +274,33 @@ def setupSliders():
 		# Horizontal Gradient Control
 		cp5 = ControlP5(this)
 		horizontalCtrl = GradientController(allColors, cp5, Slider)
+		horizontalCtrl.controllerIdentity = 1
 		# The order of settings is important
-		horizontalCtrl.setPosition(20, 440)
-		horizontalCtrl.setSize(700, 100)
-		horizontalCtrl.setSliderSize(50, 10)
+		horizontalCtrl.setPosition(x, y)
+		horizontalCtrl.setSize(w, h)
+		horizontalCtrl.setSliderSize(slider_w, slider_h)
 		horizontalCtrl.addOuterColorStops()
-		horizontalCtrl.insertColorStop(0.4)
+		horizontalCtrl.insertColorStop(0.5)
 		# horizontalCtrl.insertColorStop(0.7)
 		horizontalCtrl.addStopPositionSliders()
 		
+		# Vertical Gradient Control
+		colorsIncludingTransparant = [{'code': "__", 'name': "clear"}]
+		for c in allColors:
+			colorsIncludingTransparant.append(c)
+		verticalCtrl = GradientController(colorsIncludingTransparant, cp5, Slider)
+		verticalCtrl.controllerIdentity = 2
+		# The order of settings is important
+		verticalCtrl.setPosition(x2, y2)
+		verticalCtrl.setSize(w2, h)
+		verticalCtrl.setSliderSize(slider_w, slider_h)
+		verticalCtrl.addOuterColorStops()
+		verticalCtrl.insertColorStop(0.5)
+		verticalCtrl.addStopPositionSliders()
+		
 def draw():
 	global firstRun, savedNoticeAlpha
-	global horizontalCtrl
+	global horizontalCtrl, verticalCtrl
 	if (firstRun):
 		drawBackground(True)
 		drawOutlines(overview_scale)
@@ -268,6 +318,8 @@ def draw():
 	# Drawing the Horizontal Gradient Control
 	if horizontalCtrl:
 		horizontalCtrl.display()
+	if verticalCtrl:
+		verticalCtrl.display()
 	
 
 def drawGrid():
@@ -289,11 +341,11 @@ def saveDataAsJson(data, filename):
 	
 def save():
 	global savedNoticeAlpha
-	global horizontalCtrl
+	global horizontalCtrl, verticalCtrl
 	# 
 	# Saving the gradient slider states
 	sliderData = {'surround': horizontalCtrl.getSliderValues()}
-	# sliderData['floor'] = verticalCtrl.getSliderValues()
+	sliderData['floor'] = verticalCtrl.getSliderValues()
 	saveDataAsJson(sliderData, sliderConfigurationFile)
 	# 
 	# Saving the .json
@@ -335,7 +387,7 @@ def save():
 	text("Saved a version", savedNoticeRect[0], savedNoticeRect[1], savedNoticeRect[2], savedNoticeRect[3])
 
 def keyPressed(event):
-	global horizontalCtrl
+	global horizontalCtrl, verticalCtrl
 	# cmd + g
 	if (keyCode == 71) and (event.isMetaDown()): # 71 = g, meta = cmd
 		# Draw Grid
@@ -348,11 +400,13 @@ def keyPressed(event):
 		usedColors = analyzeColors(allTiles)
 		drawUsedColors(usedColors)
 		horizontalCtrl.needsDisplay = True
+		verticalCtrl.needsDisplay = True
 	# cmd + s
 	if (keyCode == 83) and (event.isMetaDown()): # 83 = s, meta = cmd
 		print "Saving ..."
 		save()
 		horizontalCtrl.needsDisplay = True
+		verticalCtrl.needsDisplay = True
 	if False:
 		print "keyCode: %d -  modifiers: %d" % (keyCode, event.getModifiers())
 	
@@ -369,7 +423,6 @@ def drawColorSamples(fromColors, startX, startY, drawHorizontal = True):
 			x += s + m
 		else:
 			y += s + m
-		
 	
 def drawOutlines(scale, filled=True):
 	for wall in walls:
@@ -626,7 +679,7 @@ def drawRandomTiles(scale):
 	# print "total tiles: %d" % count
 	
 def randomColorCodeForMapValues(surround = 0.0, floor = 0.0):
-	global horizontalCtrl
+	global horizontalCtrl, verticalCtrl
 	# Create weighted color list
 	weightedChoices = []
 	for c in allColors:
@@ -634,6 +687,7 @@ def randomColorCodeForMapValues(surround = 0.0, floor = 0.0):
 		weight = horizontalCtrl.valueForKeyAtPosition(c['code'], surround)
 		if weight > 0.0:
 			weightedChoices.append((c['code'], weight))
+		# Floor influence
 	if weightedChoices:
 		return weightedRandom(weightedChoices)
 	else:

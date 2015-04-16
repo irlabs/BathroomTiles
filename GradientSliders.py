@@ -195,7 +195,10 @@ class GradientController(object):
 	def colorListFromColors(self, colors):
 		newList = copy.copy(colors)
 		for c in newList:
-			c['color'] = color(c['r'], c['g'], c['b'])
+			if c['code'] == "__":
+				c['color'] = None
+			else:
+				c['color'] = color(c['r'], c['g'], c['b'])
 		return newList
 		
 	def emptyDataStopSet(self):
@@ -263,7 +266,10 @@ class GradientController(object):
 		# Draw lines
 		for c in colorData:
 			if not c['hidden']:
-				stroke(c['color'])
+				if c['color']:
+					stroke(c['color'])
+				else:
+					stroke(255)
 				for i, v in enumerate(c['values'][indexFrom:indexTo]):
 					index = i + indexFrom
 					x1 = x + stopXs[index]
@@ -291,15 +297,24 @@ class GradientController(object):
 		for c in colorsInStop:
 			sliderName = "%s_%d_%d" % (c['name'], self.stopCounter, self.controllerIdentity)
 			cSlider = self.Slider(self.cp5, sliderName)
-			tileColor = color(c['r'], c['g'], c['b'])
+			if c['color']:
+				tileColor = c['color']
+			else:
+				tileColor = color(255)
 			if showLabel:
 				cSlider.setCaptionLabel(c['name'])
 			else:
 				cSlider.setCaptionLabel("")
 			cSlider.setColorForeground(tileColor)
 			cSlider.setColorCaptionLabel(tileColor)
-			cSlider.setColorBackground(self.modColor(tileColor, False))
-			cSlider.setColorActive(self.modColor(tileColor, True))
+			if c['color']:
+				cSlider.setColorBackground(self.modColor(tileColor, False))
+				cSlider.setColorActive(self.modColor(tileColor, True))
+			else:
+				cSlider.setColorValueLabel(0)
+				cSlider.setColorForeground(color(200, 200, 200))
+				cSlider.setColorBackground(color(255, 255, 255))
+				cSlider.setColorActive(color(230, 230, 230))
 			cSlider.setSize(self.sliderWidth, self.sliderHeight)
 			cSlider.setPosition(x, y)
 			cSlider.setValue(50)
