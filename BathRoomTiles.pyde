@@ -335,6 +335,7 @@ def save():
 	text("Saved a version", savedNoticeRect[0], savedNoticeRect[1], savedNoticeRect[2], savedNoticeRect[3])
 
 def keyPressed(event):
+	global horizontalCtrl
 	# cmd + g
 	if (keyCode == 71) and (event.isMetaDown()): # 71 = g, meta = cmd
 		# Draw Grid
@@ -346,15 +347,17 @@ def keyPressed(event):
 		drawRandom()
 		usedColors = analyzeColors(allTiles)
 		drawUsedColors(usedColors)
+		horizontalCtrl.needsDisplay = True
 	# cmd + s
 	if (keyCode == 83) and (event.isMetaDown()): # 83 = s, meta = cmd
 		print "Saving ..."
 		save()
+		horizontalCtrl.needsDisplay = True
 	if False:
 		print "keyCode: %d -  modifiers: %d" % (keyCode, event.getModifiers())
 	
 def drawColorSamples(fromColors, startX, startY, drawHorizontal = True):
-	s = 17
+	s = 12
 	m = 3
 	x = startX
 	y = startY
@@ -399,7 +402,7 @@ def drawOutlines(scale, filled=True):
 
 def drawUsedColors(uniqueColors):
 	# Draw the text
-	usedColorTextSize = 15
+	usedColorTextSize = 10
 	textSize(usedColorTextSize)
 	noStroke()
 	fill(50)
