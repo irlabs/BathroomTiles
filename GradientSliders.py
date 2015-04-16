@@ -162,7 +162,7 @@ class GradientController(object):
 		nextValue = 0.0
 		relativePosition = 0.0
 		for i, p in enumerate(stopPositions):
-			if inFloat < p:
+			if inFloat <= p:
 				prevP = stopPositions[i - 1]
 				relativePosition = (inFloat - prevP) / (p - prevP)
 				prevValue = values[i - 1]

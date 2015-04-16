@@ -156,6 +156,7 @@ allColors = [
 	{'code': "Z3", 'name': "gris perle", 'r': 240, 'g': 240, 'b': 240},
 	{'code': "Z4", 'name': "gris pale", 'r': 210, 'g': 210, 'b': 210},
 ]
+colorsIncludingTransparant = []
 
 defaultColors = ["G1", "G2", "G3", "G2", "G3", "G2", "G3"]
 
@@ -204,6 +205,7 @@ def setup():
 	setupSliders()
 	
 def setupSliders():
+	global allColors, colorsIncludingTransparant
 	global horizontalCtrl, verticalCtrl
 	x = 20
 	y = 445
@@ -214,6 +216,11 @@ def setupSliders():
 	w2 = 250
 	slider_h = 10
 	slider_w = 50
+	
+	# Add transparent color
+	colorsIncludingTransparant = [{'code': "__", 'name': "clear"}]
+	for c in allColors:
+		colorsIncludingTransparant.append(c)
 	
 	# See if there is a gradient_sliders.json file to load
 	jsonLines = loadStrings(sliderConfigurationFile)
@@ -247,10 +254,6 @@ def setupSliders():
 		if sliderData.has_key('floor'):
 			if sliderData['floor'].has_key('stops'):
 				stops = sliderData['floor']['stops']
-				# Add transparent color
-				colorsIncludingTransparant = [{'code': "__", 'name': "clear"}]
-				for c in allColors:
-					colorsIncludingTransparant.append(c)
 				verticalCtrl = GradientController(colorsIncludingTransparant, cp5, Slider)
 				verticalCtrl.controllerIdentity = 2
 				# The order of settings is important
@@ -285,9 +288,6 @@ def setupSliders():
 		horizontalCtrl.addStopPositionSliders()
 		
 		# Vertical Gradient Control
-		colorsIncludingTransparant = [{'code': "__", 'name': "clear"}]
-		for c in allColors:
-			colorsIncludingTransparant.append(c)
 		verticalCtrl = GradientController(colorsIncludingTransparant, cp5, Slider)
 		verticalCtrl.controllerIdentity = 2
 		# The order of settings is important
@@ -678,18 +678,32 @@ def drawRandomTiles(scale):
 		allTiles.append(tilesOnWall)
 	# print "total tiles: %d" % count
 	
-def randomColorCodeForMapValues(surround = 0.0, floor = 0.0):
+def randomColorCodeForMapValues(surroundValue = 0.0, floorValue = 0.0):
+	global allColors, colorsIncludingTransparant
 	global horizontalCtrl, verticalCtrl
+	# 
+	# Surround influence
 	# Create weighted color list
-	weightedChoices = []
+	surroundWeightedChoices = []
 	for c in allColors:
-		# Surround influence
-		weight = horizontalCtrl.valueForKeyAtPosition(c['code'], surround)
+		weight = horizontalCtrl.valueForKeyAtPosition(c['code'], surroundValue)
 		if weight > 0.0:
-			weightedChoices.append((c['code'], weight))
-		# Floor influence
-	if weightedChoices:
-		return weightedRandom(weightedChoices)
+			surroundWeightedChoices.append((c['code'], weight))
+	# Floor influence
+	floorWeightedChoices = []
+	for c in colorsIncludingTransparant:
+		weight = verticalCtrl.valueForKeyAtPosition(c['code'], floorValue)
+		if weight > 0.0:
+			floorWeightedChoices.append((c['code'], weight))
+	# Pick a random color code 
+	if surroundWeightedChoices:
+		randomCode = weightedRandom(surroundWeightedChoices)
+		# Add floor random as an arbitrary overlay (if clear do nothing)
+		if floorWeightedChoices:
+			floorOverlay = weightedRandom(floorWeightedChoices)
+			if floorOverlay != "__":
+				randomCode = floorOverlay
+		return randomCode
 	else:
 		colorCode = defaultColors[int(random(len(defaultColors)))]
 		return colorCode
