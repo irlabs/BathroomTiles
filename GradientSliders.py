@@ -168,6 +168,10 @@ class GradientController(object):
 				prevValue = values[i - 1]
 				nextValue = values[i]
 				break
+		else:
+			# inFloat is outside bounds of stopPosition range
+			# Return the maximum stop position value
+			return values[-1]
 		return lerp(prevValue, nextValue, relativePosition)
 	
 	def recalcSubStopPositions(self):

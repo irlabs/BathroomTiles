@@ -705,6 +705,7 @@ def randomColorCodeForMapValues(surroundValue = 0.0, floorValue = 0.0):
 				randomCode = floorOverlay
 		return randomCode
 	else:
+		print "Using the default color. Shouldn't do that"
 		colorCode = defaultColors[int(random(len(defaultColors)))]
 		return colorCode
 
