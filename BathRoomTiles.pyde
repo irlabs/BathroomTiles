@@ -144,10 +144,10 @@ walls = [
 ]
 
 allColors = [
-	{'code': "G1", 'name': "vert fonce", 'r': 92, 'g': 122, 'b': 112},
-	{'code': "G2", 'name': "vert uni", 'r': 101, 'g': 129, 'b': 119},
+	{'code': "G1", 'name': "vert fonce", 'r': 92, 'g': 122, 'b': 108},
+	{'code': "G2", 'name': "vert uni", 'r': 111, 'g': 135, 'b': 121},
 	{'code': "G3", 'name': "vert pale", 'r': 128, 'g': 152, 'b': 137},
-	{'code': "G4", 'name': "pistache", 'r': 211, 'g': 230, 'b': 235},
+	{'code': "G4", 'name': "pistache", 'r': 180, 'g': 200, 'b': 180},
 	{'code': "B1", 'name': "blue nuit", 'r': 48, 'g': 72, 'b': 159},
 	{'code': "B2", 'name': "blue fonce", 'r': 77, 'g': 101, 'b': 189},
 	{'code': "B3", 'name': "blue uni", 'r': 137, 'g': 166, 'b': 233},
